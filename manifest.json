@@ -1,0 +1,16 @@
+{
+    "name": "Discord Scraper",
+    "description": "Scaper for Discord Client",
+    "version": "0.1.1",
+    "manifest_version": 2,
+    "icons": {"128": "icon.png"},
+    "content_scripts": [
+        {
+            "matches": ["*://discordapp.com/*"],
+            "css": ["scrape.css"],
+            "js": ["jquery.min.js", "scrape.js"],
+            "run_at": "document_start"
+        }
+    ],
+    "permissions": []
+}
