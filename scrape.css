@@ -5,3 +5,7 @@
 .member-username-inner {
     color: #000000 !important;
 }
+
+.message-group .comment {
+    background-color: #66FF66;
+}

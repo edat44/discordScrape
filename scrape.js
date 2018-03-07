@@ -1,6 +1,10 @@
+function getGuildName() {
+    var guild = $(".name-3gtcmp:first").text();
+    return guild;
+}
+
 function getUsers() {
-    var guild = $(".name-3gtcmp:first").text()
-    console.log("guild: " + guild)
+    var guild = getGuildName();
     var members = []
     $(".member-username-inner").each(function(i) {
         members.push($(this).text());
@@ -16,8 +20,15 @@ function getUsers() {
     });
 }
 
+function getMessages() {
+    var guild = getGuildName();
+    var $messages = $(".message-group .comment");
+}
+
 $(document).ready(function() {
-    setInterval(function() {
+    setTimeout(function() {
         getUsers();
-    }, 3000);
+        setInterval(getUsers, 3000);
+    }, 5000);
+    setInterval(getMessages, 3000);
 });
