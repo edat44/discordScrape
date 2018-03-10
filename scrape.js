@@ -8,15 +8,11 @@ function getChannelName() {
     return channel;
 }
 
-function getUsers() {
+function getAllUsers() {
     var guild = getGuildName();
     var users = []
-    $(".member-username-inner").each(function(i) {
-        users.push({
-            name: $(this).text(),
-            owner: false,
-            avatar: 'http://thecatapi.com/?id=cqv')
-        };
+    $(".member").each(function(i) {
+        users.push(getUser($(this)));
     });
     //console.log(members);
     data = {"guild": guild, "users": users};
@@ -29,10 +25,45 @@ function getUsers() {
     });
 }
 
+function getUser($node) {
+    var status = '';
+    if ($node.hasClass('member-status-online'))
+        status = 'online';
+    else if ($node.hasClass('member-status-idle'))
+        status = 'idle';
+    else if ($node.hasClass('member-status-dnd'))
+        status = 'dnd';
+    else if ($node.hasClass('member-status-invisible'))
+        status = 'invisible';
+    else
+        status = 'offline';
+
+    return {
+        name: $node.find('.member-username-inner:first').text(),
+        owner: $node.find('.member-owner-icon').length === 1,
+        avatar: parseAvatarUrl($node.find('.avatar-small:first').css('background-image')),
+        status: status,
+        game: parseGame($node),
+        bot: $node.text().indexOf('BOT') >= 0
+    }
+}
+
+function parseAvatarUrl(url) {
+    return url.match(/url\("(.*)"\)/)[1];
+}
+
+function parseGame($node) {
+    $game = $node.find('.member-activity-text:first')
+    if ($game.length === 1)
+        return $game.text().match('Playing (.*)')[1];
+    else
+        return 'None';
+}
+
 function getAllMessages() {
     var guild = getGuildName();
     var channel = getChannelName();
-    var $messages = $(".message-group .message-text");
+    var $messages = $(".message-text");
     var m = [];
     $messages.each(function(i) {
         m.push(getMessage($(this)));
@@ -61,8 +92,7 @@ function getMessage($node) {
 }
 
 function observeMessages(mutations) {
-    getAllMessages();
-    /*
+    //getAllMessages();
     mutations.forEach(function(m) {
 
         console.log("Message mutation type: ", m.type, m);
@@ -80,7 +110,7 @@ function observeMessages(mutations) {
                 }
             });
         }
-    });*/
+    });
 }
 
 function observeUsers(mutations) {
@@ -110,23 +140,23 @@ function observeChannel(mutations) {
 
 $(document).ready(function() {
     setTimeout(function() {
-        getUsers();
+        getAllUsers();
         getAllMessages();
-        //setInterval(getUsers, 3000);
-
+        setInterval(getAllUsers, 3000);
+        setInterval(getAllMessages, 3000);
+        /*
         var messageObserver = new MutationObserver(observeMessages);
         var userObserver = new MutationObserver(observeUsers);
         var channelObserver = new MutationObserver(observeChannel);
 
         //New Messages
-        messageObserver.observe($("div.messages")[0], {childList: true, subtree: true, attributeFilter: ['message-group']});
+        messageObserver.observe($("div.messages")[0], {childList: true, subtree: true}); //attributeFilter: ['message-group']
 
         //New Members
         //userObserver.observe($("div.channel-members")[0], {childList: true, subtree: true, attributeFilter: ['member']});
 
         //Change in channel
         channelObserver.observe($("div.titleText-2IfpkV")[0], {characterData: true, childList: true, subtree: true})
-    }, 5000);
-
-    //setInterval(getMessages, 3000);
+        */
+    }, 3000);
 });

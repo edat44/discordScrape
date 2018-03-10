@@ -8,8 +8,9 @@
         name: STRING,
         owner: BOOL,
         avatar: STRING (URL)),
-        status: STRING?,
-        game: STRING (or empty string)
+        status: STRING (online, idle, dnd, invisible, or offline),
+        game: STRING ('None' for no game),
+        bot: BOOL
     }
 }
 ```
