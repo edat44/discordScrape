@@ -18,7 +18,7 @@ function getAllUsers() {
     data = {"guild": guild, "users": users};
     chrome.runtime.sendMessage({
             method: 'POST',
-            url: 'http://dsg1.crc.nd.edu:5001/cse30246/discorddashboard/test',
+            url: 'http://dsg1.crc.nd.edu:5001/cse30246/discorddashboard/add_users',
             data: JSON.stringify(data)
         },  function(responseText) {
             console.log(responseText);
@@ -54,8 +54,10 @@ function parseAvatarUrl(url) {
 
 function parseGame($node) {
     $game = $node.find('.member-activity-text:first')
-    if ($game.length === 1)
-        return $game.text().match('Playing (.*)')[1];
+    if ($game.length === 1) {
+        console.log($game.text())
+        return $game.text().match('(Playing|Listening to) (.*)')[2];
+    }
     else
         return 'None';
 }
@@ -75,7 +77,7 @@ function getAllMessages() {
     }
     chrome.runtime.sendMessage({
             method: 'POST',
-            url: 'http://dsg1.crc.nd.edu:5001/cse30246/discorddashboard/test',
+            url: 'http://dsg1.crc.nd.edu:5001/cse30246/discorddashboard/add_messages',
             data: JSON.stringify(data)
         },  function (responseText) {
             console.log(responseText);
