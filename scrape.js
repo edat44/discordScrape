@@ -1,3 +1,7 @@
+(function() {
+
+var lastMessage = '';
+
 function getGuildName() {
     var guild = $(".name-3gtcmp:first").text();
     return guild;
@@ -65,10 +69,13 @@ function parseGame($node) {
 function getAllMessages() {
     var guild = getGuildName();
     var channel = getChannelName();
-    var $messages = $(".message-text");
+    var $messages = $(".message-text").get().reverse()
     var m = [];
-    $messages.each(function(i) {
-        m.push(getMessage($(this)));
+    $($messages).each(function(i) {
+        if ($(this).text() === lastMessage)
+            return false;
+        else
+            m.push(getMessage($(this)));
     });
     var data = {
         guild: guild,
@@ -82,6 +89,9 @@ function getAllMessages() {
         },  function (responseText) {
             console.log(responseText);
     });
+
+    if ($messages.length > 0)
+        lastMessage = $($messages[0]).text();
 }
 
 function getMessage($node) {
@@ -162,3 +172,5 @@ $(document).ready(function() {
         */
     }, 3000);
 });
+
+})();
