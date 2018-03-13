@@ -4,7 +4,7 @@
 ```
 {
     guild: STRING,
-    users: {
+    users: array of {
         name: STRING,
         owner: BOOL,
         avatar: STRING (URL)),
@@ -20,10 +20,20 @@
 {
     guild: STRING,
     channel: STRING,
-    messages: {
+    user_avatar: STRING,
+    messages: array of {
         text: STRING,
         time: STRING?,
         user: STRING
     }
+}
+```
+
+## json object for guild
+```
+{
+    guild: STRING,
+    avatar: STRING,
+    channels: array of STRINGS,
 }
 ```

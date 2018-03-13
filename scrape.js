@@ -59,8 +59,8 @@ function parseAvatarUrl(url) {
 function parseGame($node) {
     $game = $node.find('.member-activity-text:first')
     if ($game.length === 1) {
-        console.log($game.text())
-        return $game.text().match('(Playing|Listening to) (.*)')[2];
+        console.log($game.text());
+        return $game.text();
     }
     else
         return 'None';
