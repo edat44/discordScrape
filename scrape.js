@@ -12,6 +12,28 @@ function getChannelName() {
     return channel;
 }
 
+/*
+function getGuildInfo() {
+    var name = getGuildName();
+    var $channels = $(".container-1 .name-2SL4ev");
+    var channels = [];
+    $channels.each(function () {
+        channels.push($(this).text());
+    });
+    console.log("channels:", channels);
+}
+*/
+
+function scrollUsers() {
+    var oldPos = $(".channel-members").scrollTop();
+    var h = $(".channel-members").height();
+    //console.log("old Scroll:", oldPos, ", h: ", h);
+    $(".channel-members").scrollTop(oldPos + h);
+    var newPos = $(".channel-members").scrollTop();
+    if (oldPos === newPos)
+        $(".channel-members").scrollTop(0);
+}
+
 function getAllUsers() {
     var guild = getGuildName();
     var users = []
@@ -27,6 +49,7 @@ function getAllUsers() {
         },  function(responseText) {
             console.log(responseText);
     });
+    scrollUsers();
 }
 
 function getUser($node) {
@@ -59,7 +82,6 @@ function parseAvatarUrl(url) {
 function parseGame($node) {
     $game = $node.find('.member-activity-text:first')
     if ($game.length === 1) {
-        console.log($game.text());
         return $game.text();
     }
     else
@@ -103,6 +125,36 @@ function getMessage($node) {
     //console.log("New message in "+guild+" ("+channel+") by "+user+" at "+time+": "+message);
 }
 
+
+
+$(document).ready(function() {
+    setTimeout(function() {
+        getAllUsers();
+        getAllMessages();
+        //getGuildInfo();
+        setInterval(getAllUsers, 3000);
+        setInterval(getAllMessages, 3000);
+        //setInterval(getGuildInfo, 3000);
+        /*
+        var messageObserver = new MutationObserver(observeMessages);
+        var userObserver = new MutationObserver(observeUsers);
+        var channelObserver = new MutationObserver(observeChannel);
+
+        //New Messages
+        messageObserver.observe($("div.messages")[0], {childList: true, subtree: true}); //attributeFilter: ['message-group']
+
+        //New Members
+        //userObserver.observe($("div.channel-members")[0], {childList: true, subtree: true, attributeFilter: ['member']});
+
+        //Change in channel
+        channelObserver.observe($("div.titleText-2IfpkV")[0], {characterData: true, childList: true, subtree: true})
+        */
+    }, 3000);
+});
+
+})();
+
+/* OLD MUTATION STUFFS
 function observeMessages(mutations) {
     //getAllMessages();
     mutations.forEach(function(m) {
@@ -149,28 +201,4 @@ function observeChannel(mutations) {
         }
     });
 }
-
-$(document).ready(function() {
-    setTimeout(function() {
-        getAllUsers();
-        getAllMessages();
-        setInterval(getAllUsers, 3000);
-        setInterval(getAllMessages, 3000);
-        /*
-        var messageObserver = new MutationObserver(observeMessages);
-        var userObserver = new MutationObserver(observeUsers);
-        var channelObserver = new MutationObserver(observeChannel);
-
-        //New Messages
-        messageObserver.observe($("div.messages")[0], {childList: true, subtree: true}); //attributeFilter: ['message-group']
-
-        //New Members
-        //userObserver.observe($("div.channel-members")[0], {childList: true, subtree: true, attributeFilter: ['member']});
-
-        //Change in channel
-        channelObserver.observe($("div.titleText-2IfpkV")[0], {characterData: true, childList: true, subtree: true})
-        */
-    }, 3000);
-});
-
-})();
+*/
