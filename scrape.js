@@ -121,10 +121,23 @@ function getMessage($node) {
     $header = $node.parents('.comment').children('.message.first:first').find('.old-h2');
     user = $header.children('.username-wrapper:first').text();
     time = $header.children('.timestamp:first').text();
+    // document.getElementById('.btn-option').click();
+    // console.log(document);
+    var evt = $.Event('click');
+
+    $node.find('.btn-option').trigger(evt);  //  Source : https://stackoverflow.com/questions/27080518/how-to-fix-element-dispatchevent-is-not-a-function-without-breaking-something
+    console.log($('.option-popout:last').get()); // .find(':nth-child(2)')
+    // eventFire($node.find('.btn-option:first'), 'click');
     return {'user': user, 'time': time, 'text': message};
     //console.log("New message in "+guild+" ("+channel+") by "+user+" at "+time+": "+message);
 }
 
+// Just in case... EventFire()
+// Source : https://stackoverflow.com/questions/2705583/how-to-simulate-a-click-with-javascript
+
+function clickNode($node) {
+
+}
 
 
 $(document).ready(function() {
