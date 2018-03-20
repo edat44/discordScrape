@@ -46,20 +46,17 @@ function getAllUsers() {
     });
 
     var data = {"guild": guild, "users": users};
-    var request = {
-        type: 'sendData',
-        message: {
+
+    chrome.runtime.sendMessage({
             method: 'POST',
             url: 'http://dsg1.crc.nd.edu:5001/cse30246/discorddashboard/add_users',
             data: JSON.stringify(data)
-        }
-    };
-    chrome.runtime.sendMessage(
-        request,
-        function(responseText) {
-            console.log(responseText);
-    });
+        },  function(responseText) {
+                console.log(responseText);
+            }
+    );
     scrollUsers();
+    setTimeout(getAllUsers, userDelay);
 }
 
 function getUser($node) {
@@ -114,22 +111,19 @@ function getAllMessages() {
         channel: channel,
         messages: m
     }
-    var request = {
-        type: 'sendData',
-        message: {
+
+    chrome.runtime.sendMessage({
             method: 'POST',
             url: 'http://dsg1.crc.nd.edu:5001/cse30246/discorddashboard/add_messages',
             data: JSON.stringify(data)
-        }
-    };
-    chrome.runtime.sendMessage(
-        request,
-        function (responseText) {
-        console.log(responseText);
+        },  function (responseText) {
+            console.log(responseText);
     });
 
     if ($messages.length > 0)
         lastMessage = $($messages[0]).text();
+
+    setTimeout(getAllMessages, messageDelay);
 }
 
 function getMessage($node) {
@@ -145,17 +139,38 @@ function getMessage($node) {
     console.log($('.option-popout:last').get()); // .find(':nth-child(2)')
     // eventFire($node.find('.btn-option:first'), 'click');
     return {'user': user, 'time': time, 'text': message};
-    //console.log("New message in "+guild+" ("+channel+") by "+user+" at "+time+": "+message);
 }
 
-<<<<<<< HEAD
+function updateSettings() {
+    alert("updating settings!");
+    messageDelay = $("input[name=messageDelay]").val();
+    userDelay = $("input[name=userDelay]").val();
+    upload = $("input[name=upload]").is(":checked");
+}
+
 function setupSettings() {
     var el = `
-        <p>Did I add it?</p>
+        <style>
+            #settings {
+                background: blue;
+            }
+        </style>
+        <div id='settings'>
+            <form id="settings">
+                <span>User Delay: <input type="number" name="userDelay" min="100" max="30000" step="100" value="3000"></span>
+                <span>Message Delay: <input type="number" name="messageDelay" min="100" max="30000" step="100" value="3000"></span>
+                <span>Upload to Server: <input type="checkbox" name="upload" checked></span>
+                <button name="update" id="updateSettings" type='button'">Update</button>
+            </form>
+        </div>
     `;
-    $("body").append(el);
+    //$(".layer-kosS71:last").append(el);
+    $("#app-mount").append(el);
+    $("#updateSettings").click(function(e) {
+        e.preventDefault();
+        updateSettings();
+    });
 }
-=======
 // Just in case... EventFire()
 // Source : https://stackoverflow.com/questions/2705583/how-to-simulate-a-click-with-javascript
 
@@ -163,16 +178,11 @@ function clickNode($node) {
 
 }
 
->>>>>>> c50a085919917ab83f69fa5cb196f35ecc5e0a95
-
 $(document).ready(function() {
+    setupSettings();
     setTimeout(function() {
-        setupSettings();
         getAllUsers();
         getAllMessages();
-        //getGuildInfo();
-        setInterval(getAllUsers, userDelay);
-        setInterval(getAllMessages, messageDelay);
     }, initialDelay);
 });
 
