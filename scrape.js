@@ -2,6 +2,10 @@
 
 var lastMessage = '';
 
+var userDelay = 3000;
+var messageDelay = 3000;
+var initialDelay = 3000;
+
 function getGuildName() {
     var guild = $(".name-3gtcmp:first").text();
     return guild;
@@ -40,13 +44,19 @@ function getAllUsers() {
     $(".member").each(function(i) {
         users.push(getUser($(this)));
     });
-    //console.log(members);
-    data = {"guild": guild, "users": users};
-    chrome.runtime.sendMessage({
+
+    var data = {"guild": guild, "users": users};
+    var request = {
+        type: 'sendData',
+        message: {
             method: 'POST',
             url: 'http://dsg1.crc.nd.edu:5001/cse30246/discorddashboard/add_users',
             data: JSON.stringify(data)
-        },  function(responseText) {
+        }
+    };
+    chrome.runtime.sendMessage(
+        request,
+        function(responseText) {
             console.log(responseText);
     });
     scrollUsers();
@@ -104,12 +114,18 @@ function getAllMessages() {
         channel: channel,
         messages: m
     }
-    chrome.runtime.sendMessage({
+    var request = {
+        type: 'sendData',
+        message: {
             method: 'POST',
             url: 'http://dsg1.crc.nd.edu:5001/cse30246/discorddashboard/add_messages',
             data: JSON.stringify(data)
-        },  function (responseText) {
-            console.log(responseText);
+        }
+    };
+    chrome.runtime.sendMessage(
+        request,
+        function (responseText) {
+        console.log(responseText);
     });
 
     if ($messages.length > 0)
@@ -125,80 +141,22 @@ function getMessage($node) {
     //console.log("New message in "+guild+" ("+channel+") by "+user+" at "+time+": "+message);
 }
 
-
+function setupSettings() {
+    var el = `
+        <p>Did I add it?</p>
+    `;
+    $("body").append(el);
+}
 
 $(document).ready(function() {
     setTimeout(function() {
+        setupSettings();
         getAllUsers();
         getAllMessages();
         //getGuildInfo();
-        setInterval(getAllUsers, 3000);
-        setInterval(getAllMessages, 3000);
-        //setInterval(getGuildInfo, 3000);
-        /*
-        var messageObserver = new MutationObserver(observeMessages);
-        var userObserver = new MutationObserver(observeUsers);
-        var channelObserver = new MutationObserver(observeChannel);
-
-        //New Messages
-        messageObserver.observe($("div.messages")[0], {childList: true, subtree: true}); //attributeFilter: ['message-group']
-
-        //New Members
-        //userObserver.observe($("div.channel-members")[0], {childList: true, subtree: true, attributeFilter: ['member']});
-
-        //Change in channel
-        channelObserver.observe($("div.titleText-2IfpkV")[0], {characterData: true, childList: true, subtree: true})
-        */
-    }, 3000);
+        setInterval(getAllUsers, userDelay);
+        setInterval(getAllMessages, messageDelay);
+    }, initialDelay);
 });
 
 })();
-
-/* OLD MUTATION STUFFS
-function observeMessages(mutations) {
-    //getAllMessages();
-    mutations.forEach(function(m) {
-
-        console.log("Message mutation type: ", m.type, m);
-        if (m.type = "childList") {
-            m.addedNodes.forEach(function(n) {
-                console.log(n);
-                $n = $(n);
-                if ($n.hasClass("message") && !$n.hasClass("message-sending")) {
-                    getMessage($n)
-                }
-                else if ($n.hasClass("message-group")) {
-                    $n.find(".message-text").each(function() {
-                        getMessage($(this));
-                    });
-                }
-            });
-        }
-    });
-}
-
-function observeUsers(mutations) {
-    mutations.forEach(function(m) {
-        console.log("User mutation type: ", m.type, m);
-        if (m.type = "childList") {
-            m.addedNodes.forEach(function(n) {
-                console.log(n);
-                $n = $(n);
-                if ($n.hasClass("member")) {
-                    console.log("New User: ", n);
-                }
-            });
-        }
-    });
-}
-
-function observeChannel(mutations) {
-    mutations.forEach(function(m) {
-        console.log("Channel mutation type: ", m.type, m);
-        if (m.type == "characterData") {
-            console.log(m.target.data);
-            setTimeout(getAllMessages, 250);
-        }
-    });
-}
-*/
