@@ -19,17 +19,11 @@ function getChannelName() {
     return channel;
 }
 
-/*
-function getGuildInfo() {
-    var name = getGuildName();
-    var $channels = $(".container-1 .name-2SL4ev");
-    var channels = [];
-    $channels.each(function () {
-        channels.push($(this).text());
-    });
-    console.log("channels:", channels);
+
+function getGuildAvatar() {
+    return parseAvatarUrl($('.guild.selected').find('.avatar-small').css('background-image'));
 }
-*/
+
 
 function scrollUsers() {
     var oldPos = $(".channel-members").scrollTop();
@@ -114,6 +108,7 @@ function getAllMessages() {
     if (uploadMessages) {
         var guild = getGuildName();
         var channel = getChannelName();
+        var guildAvatar = getGuildAvatar();
         var $messages = $(".message-text").get().reverse()
         var m = [];
         $($messages).each(function(i) {
@@ -125,6 +120,7 @@ function getAllMessages() {
         var data = {
             guild: guild,
             channel: channel,
+            guild_avatar: guildAvatar,
             messages: m
         }
 
@@ -147,11 +143,11 @@ function getAllMessages() {
 }
 
 function getMessage($node) {
-    message = $node.text();
-    $header = $node.parents('.comment').children('.message.first:first').find('.old-h2');
-    user = $header.children('.username-wrapper:first').text();
-    time = $header.children('.timestamp:first').text();
-    avatar = parseAvatarUrl($header.parents('.message-group').find('.avatar-large:first').css('background-image'));
+    var message = $node.text();
+    var $header = $node.parents('.comment').children('.message.first:first').find('.old-h2');
+    var user = $header.children('.username-wrapper:first').text();
+    var time = $header.children('.timestamp:first').text();
+    var avatar = parseAvatarUrl($header.parents('.message-group').find('.avatar-large:first').css('background-image'));
     // document.getElementById('.btn-option').click();
     // console.log(document);
     /*

@@ -20,6 +20,7 @@
 {
     guild: STRING,
     channel: STRING,
+    guild_avatar: STRING (url),
     messages: array of {
         text: STRING,
         time: STRING,
