@@ -36,30 +36,31 @@ function scrollUsers() {
 }
 
 function getAllUsers() {
-    if (uploadUsers) {
-        var guild = getGuildName();
-        var users = []
-        $(".member").each(function(i) {
-            users.push(getUser($(this)));
-        });
+  var guild = getGuildName();
+   var channel = getChannelName();
+   var $messages = $(".message-text").get().reverse()
+   var m = [];
+   $($messages).each(function(i) {
+       if ($(this).text() === lastMessage)
+           return false;
+       else
+           m.push(getMessage($(this)));
+   });
+   var data = {
+       guild: guild,
+       channel: channel,
+       messages: m
+   }
 
-        var data = {"guild": guild, "users": users};
-
-        chrome.runtime.sendMessage({
-                method: 'POST',
-                url: 'http://dsg1.crc.nd.edu:5001/cse30246/discorddashboard/add_users',
-                data: JSON.stringify(data)
-            },  function(responseText) {
-                    console.log(responseText);
-                    if (!(responseText.status && responseText.status === 'error')) {
-                        scrollUsers();
-                    }
-                }
-        );
-    }
-    setTimeout(getAllUsers, userDelay);
+   chrome.runtime.sendMessage({
+           method: 'POST',
+           url: 'http://dsg1.crc.nd.edu:5001/cse30246/discorddashboard/add_messages',
+           data: JSON.stringify(data)
+       },  function (responseText) {
+           console.log(responseText);
+   });
 }
-
+ 
 function getUser($node) {
     var status = '';
     if ($node.hasClass('member-status-online'))
