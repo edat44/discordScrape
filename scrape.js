@@ -95,7 +95,10 @@ function getUser($node) {
 }
 
 function parseAvatarUrl(url) {
-    return url.match(/url\("(.*)"\)/)[1];
+    var match = url.match(/url\("(.*)"\)/)
+    if (match.length > 1)
+        return match[1];
+    return '';
 }
 
 function parseGame($node) {
