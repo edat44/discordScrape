@@ -5,6 +5,9 @@ var lastMessage = '';
 var userDelay = 3000;
 var messageDelay = 3000;
 var initialDelay = 3000;
+var uploadUsers = true;
+var uploadMessages = true;
+var messageID = "";
 
 function getGuildName() {
     var guild = $(".name-3gtcmp:first").text();
@@ -39,23 +42,27 @@ function scrollUsers() {
 }
 
 function getAllUsers() {
-    var guild = getGuildName();
-    var users = []
-    $(".member").each(function(i) {
-        users.push(getUser($(this)));
-    });
+    if (uploadUsers) {
+        var guild = getGuildName();
+        var users = []
+        $(".member").each(function(i) {
+            users.push(getUser($(this)));
+        });
 
-    var data = {"guild": guild, "users": users};
+        var data = {"guild": guild, "users": users};
 
-    chrome.runtime.sendMessage({
-            method: 'POST',
-            url: 'http://dsg1.crc.nd.edu:5001/cse30246/discorddashboard/add_users',
-            data: JSON.stringify(data)
-        },  function(responseText) {
-                console.log(responseText);
-            }
-    );
-    scrollUsers();
+        chrome.runtime.sendMessage({
+                method: 'POST',
+                url: 'http://dsg1.crc.nd.edu:5001/cse30246/discorddashboard/add_users',
+                data: JSON.stringify(data)
+            },  function(responseText) {
+                    console.log(responseText);
+                    if (!(responseText.status && responseText.status === 'error')) {
+                        scrollUsers();
+                    }
+                }
+        );
+    }
     setTimeout(getAllUsers, userDelay);
 }
 
@@ -71,6 +78,11 @@ function getUser($node) {
         status = 'invisible';
     else
         status = 'offline';
+
+    //var evt = $.Event('contextmenu', {pageX: 123, pageY: 123});
+    //$(document).trigger(evt);
+    //console.log($('.contextMenu-uoJTbz:last').get());
+    //console.log($node);
 
     return {
         name: $node.find('.member-username-inner:first').text(),
@@ -96,32 +108,37 @@ function parseGame($node) {
 }
 
 function getAllMessages() {
-    var guild = getGuildName();
-    var channel = getChannelName();
-    var $messages = $(".message-text").get().reverse()
-    var m = [];
-    $($messages).each(function(i) {
-        if ($(this).text() === lastMessage)
-            return false;
-        else
-            m.push(getMessage($(this)));
-    });
-    var data = {
-        guild: guild,
-        channel: channel,
-        messages: m
+    if (uploadMessages) {
+        var guild = getGuildName();
+        var channel = getChannelName();
+        var $messages = $(".message-text").get().reverse()
+        var m = [];
+        $($messages).each(function(i) {
+            if ($(this).text() === lastMessage)
+                return false;
+            else
+                m.push(getMessage($(this)));
+        });
+        var data = {
+            guild: guild,
+            channel: channel,
+            messages: m
+        }
+
+        chrome.runtime.sendMessage({
+                method: 'POST',
+                url: 'http://dsg1.crc.nd.edu:5001/cse30246/discorddashboard/add_messages',
+                data: JSON.stringify(data)
+            },  function (responseText) {
+                console.log(responseText);
+                if (!(responseText.status && responseText.status === 'error')) {
+                    if ($messages.length > 0)
+                    lastMessage = $($messages[0]).text();
+                }
+        });
+
+        console.log(lastMessage);
     }
-
-    chrome.runtime.sendMessage({
-            method: 'POST',
-            url: 'http://dsg1.crc.nd.edu:5001/cse30246/discorddashboard/add_messages',
-            data: JSON.stringify(data)
-        },  function (responseText) {
-            console.log(responseText);
-    });
-
-    if ($messages.length > 0)
-        lastMessage = $($messages[0]).text();
 
     setTimeout(getAllMessages, messageDelay);
 }
@@ -131,21 +148,32 @@ function getMessage($node) {
     $header = $node.parents('.comment').children('.message.first:first').find('.old-h2');
     user = $header.children('.username-wrapper:first').text();
     time = $header.children('.timestamp:first').text();
+    avatar = parseAvatarUrl($header.parents('.message-group').find('.avatar-large:first').css('background-image'));
     // document.getElementById('.btn-option').click();
     // console.log(document);
+    /*
     var evt = $.Event('click');
 
     $node.find('.btn-option').trigger(evt);  //  Source : https://stackoverflow.com/questions/27080518/how-to-fix-element-dispatchevent-is-not-a-function-without-breaking-something
-    console.log($('.option-popout:last').get()); // .find(':nth-child(2)')
-    // eventFire($node.find('.btn-option:first'), 'click');
-    return {'user': user, 'time': time, 'text': message};
+    $popup = $('.option-popout:last')
+    console.log($popup.get()); // .find(':nth-child(2)')
+    $popup.children().each(function() {
+        if ($(this).text() == "Copy ID") {
+            console.log($(this));
+            $(this).trigger($.Event('click'));
+            return false;
+        }
+    });
+    */
+    return {'user': user, 'avatar': avatar, 'time': time, 'text': message};
 }
 
 function updateSettings() {
     alert("updating settings!");
     messageDelay = $("input[name=messageDelay]").val();
     userDelay = $("input[name=userDelay]").val();
-    upload = $("input[name=upload]").is(":checked");
+    uploadUsers = $("input[name=uploadUsers]").is(":checked");
+    uploadMessages = $("input[name=uploadMessages]").is(":checked");
 }
 
 function setupSettings() {
@@ -159,7 +187,8 @@ function setupSettings() {
             <form id="settings">
                 <span>User Delay: <input type="number" name="userDelay" min="100" max="30000" step="100" value="3000"></span>
                 <span>Message Delay: <input type="number" name="messageDelay" min="100" max="30000" step="100" value="3000"></span>
-                <span>Upload to Server: <input type="checkbox" name="upload" checked></span>
+                <span>Upload Users: <input type="checkbox" name="uploadUsers" checked></span>
+                <span>Upload Messages: <input type="checkbox" name="uploadMessages" checked></span>
                 <button name="update" id="updateSettings" type='button'">Update</button>
             </form>
         </div>
@@ -177,6 +206,21 @@ function setupSettings() {
 function clickNode($node) {
 
 }
+
+document.addEventListener('copy', function(e){
+    //Stop default copy
+    e.preventDefault();
+
+    // The copy event doesn't give us access to the clipboard data,
+    // so we need to get the user selection via the Selection API.
+    var selection = window.getSelection().toString();
+
+    // Transform the selection in any way we want.
+    // In this example we will escape HTML code.
+    console.log("Copied data: ", selection);
+    messageID = selection;
+    e.clipboardData.setData('text/plain', selection);
+});
 
 $(document).ready(function() {
     setupSettings();

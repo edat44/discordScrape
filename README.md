@@ -7,7 +7,7 @@
     users: array of {
         name: STRING,
         owner: BOOL,
-        avatar: STRING (URL)),
+        avatar: STRING (URL),
         status: STRING (online, idle, dnd, invisible, or offline),
         game: STRING ('None' for no game),
         bot: BOOL
@@ -20,10 +20,10 @@
 {
     guild: STRING,
     channel: STRING,
-    user_avatar: STRING,
     messages: array of {
         text: STRING,
-        time: STRING?,
+        time: STRING,
+        avatar: STRING (URL),
         user: STRING
     }
 }
