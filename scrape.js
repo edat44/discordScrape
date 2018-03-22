@@ -171,11 +171,11 @@ function getMessage($node) {
 }
 
 function updateSettings() {
-    alert("updating settings!");
     messageDelay = $("input[name=messageDelay]").val();
     userDelay = $("input[name=userDelay]").val();
     uploadUsers = $("input[name=uploadUsers]").is(":checked");
     uploadMessages = $("input[name=uploadMessages]").is(":checked");
+    console.log("updated time settings!");
 }
 
 function setupSettings() {
@@ -187,9 +187,9 @@ function setupSettings() {
         </style>
         <div id='settings'>
             <form id="settings">
-                <span>User Delay: <input type="number" name="userDelay" min="100" max="30000" step="100" value="3000"></span>
-                <span>Message Delay: <input type="number" name="messageDelay" min="100" max="30000" step="100" value="3000"></span>
-                <span>Upload Users: <input type="checkbox" name="uploadUsers" checked></span>
+                <span>User Delay: <input type="number" name="userDelay" min="100" max="60000" step="100" value="2000"></span>
+                <span>Message Delay: <input type="number" name="messageDelay" min="100" max="60000" step="100" value="30000"></span>
+                <span>Upload Users: <input type="checkbox" name="uploadUsers"></span>
                 <span>Upload Messages: <input type="checkbox" name="uploadMessages" checked></span>
                 <button name="update" id="updateSettings" type='button'">Update</button>
             </form>
@@ -197,6 +197,7 @@ function setupSettings() {
     `;
     //$(".layer-kosS71:last").append(el);
     $("#app-mount").append(el);
+    updateSettings();
     $("#updateSettings").click(function(e) {
         e.preventDefault();
         updateSettings();
