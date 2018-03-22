@@ -10,7 +10,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, callback) {
         },
         error: function(xhr, textStatus, errorThrown) {
             //if required, do some error handling
-            callback({'status': textStatus})
+            callback({'status': textStatus, 'url': request.url, 'xhrstatus': xhr.status})
             /*'failed to connect to ' + request.url +
             '\nerror: ' + errorThrown +
             '\ntextStatus: ' + textStatus +

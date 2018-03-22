@@ -21,7 +21,8 @@ function getChannelName() {
 
 
 function getGuildAvatar() {
-    return parseAvatarUrl($('.guild.selected').find('.avatar-small').css('background-image'));
+    var avatar = parseAvatarUrl($('.guild.selected').find('.avatar-small').css('background-image'));
+    return avatar;
 }
 
 
@@ -50,7 +51,7 @@ function getAllUsers() {
                 url: 'http://dsg1.crc.nd.edu:5001/cse30246/discorddashboard/add_users',
                 data: JSON.stringify(data)
             },  function(responseText) {
-                    console.log(responseText);
+                    console.log("User response:", responseText);
                     if (!(responseText.status && responseText.status === 'error')) {
                         scrollUsers();
                     }
@@ -89,6 +90,7 @@ function getUser($node) {
 }
 
 function parseAvatarUrl(url) {
+    if (!url.length) return '';
     var match = url.match(/url\("(.*)"\)/)
     if (match.length > 1)
         return match[1];
@@ -124,15 +126,16 @@ function getAllMessages() {
             messages: m
         }
 
+        console.log("Message Data:", data);
         chrome.runtime.sendMessage({
                 method: 'POST',
                 url: 'http://dsg1.crc.nd.edu:5001/cse30246/discorddashboard/add_messages',
                 data: JSON.stringify(data)
             },  function (responseText) {
-                console.log(responseText);
+                console.log("Message Response:", responseText);
                 if (!(responseText.status && responseText.status === 'error')) {
                     if ($messages.length > 0)
-                    lastMessage = $($messages[0]).text();
+                        lastMessage = $($messages[0]).text();
                 }
         });
 
