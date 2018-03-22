@@ -9,6 +9,9 @@ var uploadUsers = true;
 var uploadMessages = true;
 var messageID = "";
 
+var userIntervalID = false;
+var msgIntervalID = false;
+
 function getGuildName() {
     var guild = $(".name-3gtcmp:first").text();
     return guild;
@@ -58,7 +61,6 @@ function getAllUsers() {
                 }
         );
     }
-    setTimeout(getAllUsers, userDelay);
 }
 
 function getUser($node) {
@@ -141,8 +143,6 @@ function getAllMessages() {
 
         console.log(lastMessage);
     }
-
-    setTimeout(getAllMessages, messageDelay);
 }
 
 function getMessage($node) {
@@ -176,6 +176,11 @@ function updateSettings() {
     uploadUsers = $("input[name=uploadUsers]").is(":checked");
     uploadMessages = $("input[name=uploadMessages]").is(":checked");
     console.log("updated time settings!");
+    clearInterval(userIntervalID);
+    clearInterval(msgIntervalID);
+    userIntervalID = setInterval(getAllUsers, userDelay);
+    msgIntervalID = setInterval(getAllMessages, messageDelay);
+
 }
 
 function setupSettings() {
@@ -226,10 +231,8 @@ document.addEventListener('copy', function(e){
 });
 
 $(document).ready(function() {
-    setupSettings();
     setTimeout(function() {
-        getAllUsers();
-        getAllMessages();
+        setupSettings();
     }, initialDelay);
 });
 
