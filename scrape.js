@@ -76,10 +76,18 @@ function getUser($node) {
     else
         status = 'offline';
 
-    //var evt = $.Event('contextmenu', {pageX: 123, pageY: 123});
-    //$(document).trigger(evt);
-    //console.log($('.contextMenu-uoJTbz:last').get());
-    //console.log($node);
+    var element = $node.get()[0];
+    var e = element.ownerDocument.createEvent('MouseEvent');
+
+    e.initMouseEvent('contextmenu', true, true,
+             element.ownerDocument.defaultView, 1, 0, 0, 0, 0, false,
+             false, false, false,2, null);
+
+
+    !element.dispatchEvent(e);
+    var $context = $('.contextMenu-uoJTbz:last');
+    if ($context.length > 0)
+        copyFromNode($context, ".item-1XYaYf");
 
     return {
         name: $node.find('.member-username-inner:first').text(),
@@ -211,8 +219,25 @@ function setupSettings() {
 // Just in case... EventFire()
 // Source : https://stackoverflow.com/questions/2705583/how-to-simulate-a-click-with-javascript
 
-function clickNode($node) {
+function copyFromNode($node, className) {
+    console.log($node);
+    $node.find(className).each(function() {
+        if ($(this).text() == "Copy ID") {
+            $(this).bind('copy', function(){
+                console.log("COPY ID button was COPIED");
+            });
+            var element = $(this)[0];
+            console.log(element);
+            var e = element.ownerDocument.createEvent('MouseEvent');
+            e.initMouseEvent('click', true, true,
+                     element.ownerDocument.defaultView, 1, 0, 0, 0, 0, false,
+                     false, false, false, 0, null);
 
+
+            !element.dispatchEvent(e);
+            return false;
+        }
+    });
 }
 
 document.addEventListener('copy', function(e){
@@ -226,7 +251,6 @@ document.addEventListener('copy', function(e){
     // Transform the selection in any way we want.
     // In this example we will escape HTML code.
     console.log("Copied data: ", selection);
-    messageID = selection;
     e.clipboardData.setData('text/plain', selection);
 });
 
