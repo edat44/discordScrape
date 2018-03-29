@@ -84,6 +84,7 @@ function getUser($node) {
     else
         status = 'offline';
 
+    /* CLICK BAIT STUFFS
     var element = $node.get()[0];
     var e = element.ownerDocument.createEvent('MouseEvent');
 
@@ -101,6 +102,7 @@ function getUser($node) {
     else {
         console.log("No context menu found :(");
     }
+    */
 
     return {
         name: $node.find('.member-username-inner:first').text(),
