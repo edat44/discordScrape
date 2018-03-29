@@ -4,6 +4,7 @@
 ```
 {
     guild: STRING,
+    usersReset: BOOL (reached end of users list)
     users: array of {
         name: STRING,
         owner: BOOL,

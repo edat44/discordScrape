@@ -1,6 +1,7 @@
 (function() {
 
-var lastMessage = '';
+var lastMessage = null;
+var nextLastMessage = null;
 
 var userDelay = 3000;
 var messageDelay = 3000;
@@ -11,6 +12,8 @@ var messageID = "";
 
 var userIntervalID = false;
 var msgIntervalID = false;
+
+var usersReset = false;
 
 function getGuildName() {
     var guild = $(".name-3gtcmp:first").text();
@@ -35,8 +38,13 @@ function scrollUsers() {
     //console.log("old Scroll:", oldPos, ", h: ", h);
     $(".channel-members").scrollTop(oldPos + h);
     var newPos = $(".channel-members").scrollTop();
-    if (oldPos === newPos)
+    if (oldPos === newPos) {
         $(".channel-members").scrollTop(0);
+        usersReset = true;
+    }
+    else {
+        usersReset = false;
+    }
 }
 
 function getAllUsers() {
@@ -47,7 +55,7 @@ function getAllUsers() {
             users.push(getUser($(this)));
         });
 
-        var data = {"guild": guild, "users": users};
+        var data = {"guild": guild, "users": users, "usersReset": usersReset};
 
         chrome.runtime.sendMessage({
                 method: 'POST',
@@ -86,8 +94,13 @@ function getUser($node) {
 
     !element.dispatchEvent(e);
     var $context = $('.contextMenu-uoJTbz:last');
-    if ($context.length > 0)
+    if ($context.length > 0) {
+        console.log("Found context menu :)");
         copyFromNode($context, ".item-1XYaYf");
+    }
+    else {
+        console.log("No context menu found :(");
+    }
 
     return {
         name: $node.find('.member-username-inner:first').text(),
@@ -121,13 +134,12 @@ function getAllMessages() {
         var guild = getGuildName();
         var channel = getChannelName();
         var guildAvatar = getGuildAvatar();
-        var $messages = $(".message-text").get().reverse()
+        var $messageGroups = $(".message-group").get().reverse();
         var m = [];
-        $($messages).each(function(i) {
-            if ($(this).text() === lastMessage)
-                return false;
-            else
-                m.push(getMessage($(this)));
+        $($messageGroups).each(function(i) {
+            var newMessages = getMessageGroup($(this), (i === 0));
+            m = m.concat(newMessages[0]);
+            if (newMessages[1]) return false;
         });
         var data = {
             guild: guild,
@@ -145,37 +157,48 @@ function getAllMessages() {
                 console.log("Message Response:", responseText);
                 if (!(responseText.status && responseText.status === 'error')) {
                     if ($messages.length > 0)
-                        lastMessage = $($messages[0]).text();
+                        lastMessage = nextLastMessage;
                 }
         });
-
-        console.log(lastMessage);
     }
 }
 
-function getMessage($node) {
-    var message = $node.text();
-    var $header = $node.parents('.comment').children('.message.first:first').find('.old-h2');
+function getMessage($messageNode, time, user, first) {
+    var text = $messageNode.text();
+    var messageIdentifier = JSON.stringify({time: time, user: user, text: text});
+    console.log("old last message:", lastMessage);
+    console.log("new      message:", messageIdentifier);
+    if (messageIdentifier === lastMessage) {
+        console.log("hit last message!");
+        return false;
+    }
+    if (first) nextLastMessage = messageIdentifier;
+    return text;
+}
+
+function getMessageGroup($groupNode, first) {
+    var $header = $groupNode.find('.message.first:first').find('.old-h2');
     var user = $header.children('.username-wrapper:first').text();
     var time = $header.children('.timestamp:first').text();
-    var avatar = parseAvatarUrl($header.parents('.message-group').find('.avatar-large:first').css('background-image'));
-    // document.getElementById('.btn-option').click();
-    // console.log(document);
-    /*
-    var evt = $.Event('click');
+    var avatar = parseAvatarUrl($groupNode.find('.avatar-large:first').css('background-image'));
+    var m = [];
+    $messages = $groupNode.find('.message-text').get().reverse();
+    var stop = false;
 
-    $node.find('.btn-option').trigger(evt);  //  Source : https://stackoverflow.com/questions/27080518/how-to-fix-element-dispatchevent-is-not-a-function-without-breaking-something
-    $popup = $('.option-popout:last')
-    console.log($popup.get()); // .find(':nth-child(2)')
-    $popup.children().each(function() {
-        if ($(this).text() == "Copy ID") {
-            console.log($(this));
-            $(this).trigger($.Event('click'));
+    $($messages).each(function(i) {
+        var text = getMessage($(this), time, user, first && (i === 0));
+        if (text === false) {
+            stop = true;
             return false;
-        }
+        };
+        m.push({
+            'user': user,
+            'avatar': avatar,
+            'time': time,
+            'text': text
+        });
     });
-    */
-    return {'user': user, 'avatar': avatar, 'time': time, 'text': message};
+    return [m, stop];
 }
 
 function updateSettings() {
@@ -200,7 +223,7 @@ function setupSettings() {
         </style>
         <div id='settings'>
             <form id="settings">
-                <span>User Delay: <input type="number" name="userDelay" min="100" max="60000" step="100" value="2000"></span>
+                <span>User Delay: <input type="number" name="userDelay" min="100" max="60000" step="100" value="1000"></span>
                 <span>Message Delay: <input type="number" name="messageDelay" min="100" max="60000" step="100" value="30000"></span>
                 <span>Upload Users: <input type="checkbox" name="uploadUsers"></span>
                 <span>Upload Messages: <input type="checkbox" name="uploadMessages" checked></span>
@@ -212,7 +235,7 @@ function setupSettings() {
     $("#app-mount").append(el);
     updateSettings();
     $("#updateSettings").click(function(e) {
-        e.preventDefault();
+        //e.preventDefault();
         updateSettings();
     });
 }
@@ -220,14 +243,14 @@ function setupSettings() {
 // Source : https://stackoverflow.com/questions/2705583/how-to-simulate-a-click-with-javascript
 
 function copyFromNode($node, className) {
-    console.log($node);
+    //console.log($node);
     $node.find(className).each(function() {
         if ($(this).text() == "Copy ID") {
             $(this).bind('copy', function(){
-                console.log("COPY ID button was COPIED");
+                //console.log("COPY ID button was COPIED");
             });
             var element = $(this)[0];
-            console.log(element);
+            //console.log(element);
             var e = element.ownerDocument.createEvent('MouseEvent');
             e.initMouseEvent('click', true, true,
                      element.ownerDocument.defaultView, 1, 0, 0, 0, 0, false,
@@ -235,6 +258,7 @@ function copyFromNode($node, className) {
 
 
             !element.dispatchEvent(e);
+
             return false;
         }
     });
@@ -242,7 +266,7 @@ function copyFromNode($node, className) {
 
 document.addEventListener('copy', function(e){
     //Stop default copy
-    e.preventDefault();
+    //e.preventDefault();
 
     // The copy event doesn't give us access to the clipboard data,
     // so we need to get the user selection via the Selection API.
@@ -251,7 +275,7 @@ document.addEventListener('copy', function(e){
     // Transform the selection in any way we want.
     // In this example we will escape HTML code.
     console.log("Copied data: ", selection);
-    e.clipboardData.setData('text/plain', selection);
+    //e.clipboardData.setData('text/plain', selection);
 });
 
 $(document).ready(function() {
